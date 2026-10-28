@@ -36,22 +36,51 @@ Yang paling relevan adalah §2.5. Preposisi tidak menjadi head frasa, melainkan 
 
 ## D. Modifikasi kode
 
-**Fitur yang ditambahkan:** ...
+**Fitur yang ditambahkan:** 
+memilih **pasangan kalimat**:
+1. "Siti membaca buku di perpustakaan." / "Buku dibaca oleh Siti di perpustakaan."
+2. "Ibu memasak nasi di dapur." / "Nasi dimasak oleh Ibu di dapur."
 
-**File dan bagian yang diubah:** ...
+**File dan bagian yang diubah:** 
+- `data/contoh_kalimat.conllu`: menambah dua kalimat baru dengan `sent_id` `aktif2` dan `pasif2`. Dua kalimat awal tidak diubah.
+- `index.html`: menambah elemen `<select id="pair">` pada panel kontrol, dengan gaya yang sama dengan dropdown yang sudah ada.
+- `app.js`:
+  - Menambah konstanta `PAIRS` yang memetakan tiap pasangan ke `sent_id` kalimat aktif dan pasifnya.
+  - Menambah `aktif2` dan `pasif2` pada `SEMANTIC_ROLES`.
+  - Mengubah `render()` agar membaca pasangan terpilih.
+  - Mengubah `renderComparison(pair)` agar tabel dibuat dari pasangan terpilih.
+  - Membuat keterangan *Voice* dari token *root* (sebelumnya teks tetap).
+  - Menambah `resetInspector()` agar inspector tidak menampilkan token dari kalimat sebelumnya.
+  - Menambah pengecekan di `main()` bahwa semua `sent_id` yang dibutuhkan ada di fi
 
-**Hasil pengujian:** ...
+**Hasil pengujian:** 
+- `python validate_conllu.py data/contoh_kalimat.conllu` meloloskan 4 kalimat (6, 7, 6, 7 *syntactic words*; masing-masing satu *root*).
+- Di browser (`http://localhost:8000/`), pada pasangan 2 label yang muncul sama dengan pasangan 1: `Ibu`: `nsubj` → `obl:agent`, `nasi`: `obj` → `nsubj:pass`, `dapur`: `obl` pada kedua kalimat. Pada kedua pasangan, `oleh` dan `di` berlabel `case`.
+- Tabel perbandingan dan keterangan *Voice* ikut berganti, dan opsi "Sorot relation yang berubah" serta "Tampilkan punctuation" tetap berfungsi pada kedua pasangan.
 
-**Screenshot before/after:** (sertakan gambar dengan Markdown jika tersedia)
+**Screenshot before/after:** 
+
+Sebelum (hanya satu pasangan kalimat):
+
+![Before](before.png)
+
+Sesudah (pasangan 2 dapat dipilih):
+
+![After](after.png)
 
 ## E. Refleksi
 
 Apa satu hal tentang Bahasa Indonesia atau UD yang baru Anda pahami setelah melihat visualisasi?
 
-...
+label panah dan peran makna adalah dua hal yang berbeda. Pada visualisasi, `Siti` (atau `Ibu`) tetap berwarna *agent* di kalimat aktif maupun pasif, tetapi labelnya berubah dari `nsubj` menjadi `obl:agent`. Artinya UD mencatat fungsi gramatikal dalam klausa, bukan siapa yang melakukan tindakan. Saya juga baru sadar bahwa `di` pada "di perpustakaan" menjadi node `case` sendiri, sedangkan `di-` pada "dibaca" tidak, karena UD menghubungkan kata utuh (lexicalism).
 
 ## F. Referensi
 
 - de Marneffe et al. (2015 revision). [*Universal Dependencies: A cross-linguistic typology*](https://nlp.stanford.edu/~manning/papers/USD_LREC14_UD_revision.pdf).
 - [Universal Dependencies — Indonesian-GSD](https://universaldependencies.org/treebanks/id_gsd/index.html).
-- Dokumentasi UD v2 lain yang Anda gunakan: ...
+- Dokumentasi UD v2 lain yang Anda gunakan:
+  - [Format CoNLL-U](https://universaldependencies.org/format.html) — kolom `ID`, `FORM`, `HEAD`, `DEPREL`, `FEATS`.
+  - [Daftar relasi UD v2](https://universaldependencies.org/u/dep/index.html) — `nsubj`, `obj`, `obl`, `case`.
+  - [`nsubj:pass` (Indonesian)](https://universaldependencies.org/id/dep/nsubj-pass.html) — subjek nominal pada klausa pasif.
+  - [`obl:agent` (Indonesian)](https://universaldependencies.org/id/dep/obl-agent.html) — pelaku pada klausa pasif.
+  - [`case`](https://universaldependencies.org/u/dep/case.html) — penanda kasus/preposisi (`di`, `oleh`).

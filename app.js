@@ -7,6 +7,14 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const SEMANTIC_ROLES = {
   aktif: { 1: "agent", 3: "patient", 5: "location" },
   pasif: { 1: "patient", 4: "agent", 6: "location" },
+  // Pasangan kalimat 2 (struktur token sama dengan pasangan 1)
+  aktif2: { 1: "agent", 3: "patient", 5: "location" },
+  pasif2: { 1: "patient", 4: "agent", 6: "location" },
+};
+// Setiap pasangan = sent_id kalimat active + sent_id kalimat passive di file CoNLL-U.
+const PAIRS = {
+  1: { aktif: "aktif", pasif: "pasif" },
+  2: { aktif: "aktif2", pasif: "pasif2" },
 };
 const ROLE_NAME = { agent: "Agent", patient: "Patient", location: "Location" };
 const CHANGING_ROLES = new Set(["agent", "patient"]);
@@ -178,7 +186,7 @@ function findRoleToken(sentenceId, role) {
   return entry ? sentences[sentenceId].tokens.find(t => t.id === Number(entry[0])) : null;
 }
 
-function renderComparison() {
+function renderComparison(pair) {
   const body = document.getElementById("compareBody");
   body.replaceChildren();
   for (const role of ["agent", "patient", "location"]) {
@@ -187,7 +195,7 @@ function renderComparison() {
     name.textContent = ROLE_NAME[role];
     tr.appendChild(name);
     for (const id of ["aktif", "pasif"]) {
-      const token = findRoleToken(id, role);
+      const token = findRoleToken(pair[id], role);
       const td = document.createElement("td");
       const strong = document.createElement("strong");
       strong.textContent = token ? token.form : "—";
@@ -196,35 +204,47 @@ function renderComparison() {
     }
     body.appendChild(tr);
   }
+  const rootA = sentences[pair.aktif].tokens.find(t => t.head === 0);
+  const rootP = sentences[pair.pasif].tokens.find(t => t.head === 0);
   document.getElementById("voiceComparison").textContent =
-    "Verb voice: membaca [Voice=Act] → dibaca [Voice=Pass]. Pada passive voice, patient menjadi nsubj:pass dan agent menjadi obl:agent.";
+    `Verb voice: ${rootA.form} [${rootA.feats}] → ${rootP.form} [${rootP.feats}]. Pada passive voice, patient menjadi nsubj:pass dan agent menjadi obl:agent.`;
 }
 
 function render() {
   const mode = document.getElementById("mode").value;
   const showChanges = document.getElementById("showChanges").checked;
   const showPunct = document.getElementById("showPunct").checked;
+  const pair = PAIRS[document.getElementById("pair").value];
   const target = document.getElementById("treeGrid");
   target.classList.toggle("single", mode !== "bandingkan");
   target.replaceChildren();
-  if (mode !== "pasif") target.appendChild(createTreeCard(sentences.aktif, "01 · Active voice", showChanges, showPunct));
-  if (mode !== "aktif") target.appendChild(createTreeCard(sentences.pasif, "02 · Passive voice", showChanges, showPunct));
+  if (mode !== "pasif") target.appendChild(createTreeCard(sentences[pair.aktif], "01 · Active voice", showChanges, showPunct));
+  if (mode !== "aktif") target.appendChild(createTreeCard(sentences[pair.pasif], "02 · Passive voice", showChanges, showPunct));
+  renderComparison(pair);
+}
+
+// Saat pasangan diganti, kosongkan inspector supaya tidak menampilkan token dari kalimat lama.
+function resetInspector() {
+  document.getElementById("inspectorContent").textContent =
+    "Klik satu kata dalam dependency tree untuk melihat ID, HEAD, DEPREL, UPOS, dan FEATS.";
 }
 
 async function main() {
   try {
-    const response = await fetch("data/contoh_kalimat.conllu");
+    const response = await fetch("data/tambah_kalimat.conllu");
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const parsed = parseConllu(await response.text());
     sentences = Object.fromEntries(parsed.map(sentence => [sentence.id, sentence]));
-    if (!sentences.aktif || !sentences.pasif) {
-      throw new Error("Butuh sent_id = aktif dan sent_id = pasif di file CoNLL-U.");
+    for (const pair of Object.values(PAIRS)) {
+      if (!sentences[pair.aktif] || !sentences[pair.pasif]) {
+        throw new Error(`Butuh sent_id = ${pair.aktif} dan sent_id = ${pair.pasif} di file CoNLL-U.`);
+      }
     }
-    for (const input of ["mode", "showChanges", "showPunct"]) {
+    for (const input of ["pair", "mode", "showChanges", "showPunct"]) {
       document.getElementById(input).addEventListener("change", render);
     }
+    document.getElementById("pair").addEventListener("change", resetInspector);
     render();
-    renderComparison();
   } catch (error) {
     const target = document.getElementById("treeGrid");
     target.textContent = `Gagal memuat data: ${error.message}. Jalankan: python -m http.server 8000 lalu buka http://localhost:8000/`;

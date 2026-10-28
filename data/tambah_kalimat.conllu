@@ -19,3 +19,23 @@
 6	perpustakaan	perpustakaan	NOUN	_	_	2	obl	_	SpaceAfter=No
 7	.	.	PUNCT	_	_	2	punct	_	_
 
+# sent_id = aktif2
+# text = Ibu memasak nasi di dapur.
+# note = Anotasi ilustratif untuk pembelajaran, bukan kutipan dari treebank resmi.
+1	Ibu	ibu	NOUN	_	_	2	nsubj	_	_
+2	memasak	masak	VERB	_	Voice=Act	0	root	_	_
+3	nasi	nasi	NOUN	_	_	2	obj	_	_
+4	di	di	ADP	_	_	5	case	_	_
+5	dapur	dapur	NOUN	_	_	2	obl	_	SpaceAfter=No
+6	.	.	PUNCT	_	_	2	punct	_	_
+
+# sent_id = pasif2
+# text = Nasi dimasak oleh Ibu di dapur.
+# note = Anotasi ilustratif untuk pembelajaran, bukan kutipan dari treebank resmi.
+1	Nasi	nasi	NOUN	_	_	2	nsubj:pass	_	_
+2	dimasak	masak	VERB	_	Voice=Pass	0	root	_	_
+3	oleh	oleh	ADP	_	_	4	case	_	_
+4	Ibu	ibu	NOUN	_	_	2	obl:agent	_	_
+5	di	di	ADP	_	_	6	case	_	_
+6	dapur	dapur	NOUN	_	_	2	obl	_	SpaceAfter=No
+7	.	.	PUNCT	_	_	2	punct	_	_
