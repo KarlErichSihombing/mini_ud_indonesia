@@ -7,7 +7,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const SEMANTIC_ROLES = {
   aktif: { 1: "agent", 3: "patient", 5: "location" },
   pasif: { 1: "patient", 4: "agent", 6: "location" },
-  // Pasangan kalimat 2 (struktur token sama dengan pasangan 1)
+
   aktif2: { 1: "agent", 3: "patient", 5: "location" },
   pasif2: { 1: "patient", 4: "agent", 6: "location" },
 };
@@ -22,7 +22,7 @@ let sentences = {};
 
 function parseConllu(raw) {
   const results = [];
-  // Baris kosong memisahkan sentence. Setiap word line harus 10 kolom (TAB).
+
   for (const block of raw.trim().split(/\r?\n\s*\r?\n/)) {
     const sentence = { id: "", text: "", tokens: [] };
     for (const line of block.split(/\r?\n/)) {
@@ -37,7 +37,7 @@ function parseConllu(raw) {
         if (fields.length !== 10) {
           throw new Error(`Format CoNLL-U salah: butuh 10 kolom: ${line}`);
         }
-        // Untuk basic tree: lewati baris multiword token (1-2) dan empty node (3.1).
+        
         if (!/^\d+$/.test(fields[0])) continue;
         sentence.tokens.push({
           id: Number(fields[0]), form: fields[1], lemma: fields[2],
@@ -80,7 +80,7 @@ function renderTree(sentence, highlightChanges, showPunct) {
   }
   svg.appendChild(defs);
 
-  // Edge lebih dulu, supaya node tidak tertutup panah.
+  
   for (const t of tokens) {
     if (t.head === 0 || !positions.has(t.head)) continue;
     const role = SEMANTIC_ROLES[sentence.id]?.[t.id];
